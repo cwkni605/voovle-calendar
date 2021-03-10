@@ -44,19 +44,24 @@ class NewCalendarEvent
      *  Color: Bold Blue = colorId: 9 ||
      *  Color: Bold Green = colorId: 10 ||
      *  Color: bold red = colorId: 11 ||
+     * @param start.day -This sets the starting day from the current date
+     * @param start.hour -This sets the starting hour
+     * @param end.day -This sets the ending day from the current date
+     * @param end.hour -This sets the ending hour
     */
-    constructor(title, location, description, colorId)
+    constructor(title, location, description, colorId, start = {day, hour}, end = {day, hour})
     {
+      if(start == undefined || end == undefined) throw `starting time invalid\n ${start.day}\n ${start.hour}\n ${end.day}\n ${end.hour}`;
         this.summary = title,
         this.location = location,
         this.description = description,
         this.colorId = colorId,
         this.start = {
-            dateTime: eventStartTimeEval(0,0),
+            dateTime: eventStartTimeEval(start.day,start.hour),
             timeZone: 'America/Denver',
         },
         this.end = {
-            dateTime: eventEndTimeEval(0,0),
+            dateTime: eventEndTimeEval(end.day,end.hour),
             timeZone: 'America/Denver',
         }
     }
@@ -66,10 +71,10 @@ class NewCalendarEvent
  * @param day -This sets the day.
  * @param hour -This sets the hour.
 */
-function eventStartTimeEval(day,hours) {
+function eventStartTimeEval(day,hour) {
   const eventStartTime = new Date();
-  eventStartTime.setDate(eventStartTime.getDate());
-  eventStartTime.setHours(0, 0,0,0);
+  eventStartTime.setDate(eventStartTime.getDate() + day);
+  eventStartTime.setHours(hour, 0,0,0);
   return eventStartTime;
 }
 
@@ -80,15 +85,14 @@ function eventStartTimeEval(day,hours) {
 function eventEndTimeEval(day, hour) {
   // Create a new event end date instance for temp uses in our calendar.
   const eventEndTime = new Date();
-  eventEndTime.setDate(eventEndTime.getDate()+50);
-  eventEndTime.setHours(0, 0,0,0);
+  eventEndTime.setDate(eventEndTime.getDate() + day);
+  eventEndTime.setHours(hour, 0,0,0);
   return eventEndTime;
 }
 
-//*
 // Check if we are busy and add an event on our calendar at the same time.
 function addEventToCalendar(fileData){
-  let createdEvent = new NewCalendarEvent("testing", "This is date testing", "this is a location", 4);
+  let createdEvent = new NewCalendarEvent("testing", "This is date testing", "this is a location", 4, {day:2, hour:0},{day:3, hour:24});
   calendar.freebusy.query(
     {
       resource: {
@@ -108,35 +112,81 @@ function addEventToCalendar(fileData){
       // Check if event array is empty which means we are not busy
       if (eventArr.length === 0){
         // If we are not busy create a new calendar event.
-        return calendar.events.insert(
-          { calendarId: 'primary', resource: createdEvent }, err => {
+        return calendar.events.insert({ calendarId: 'primary', resource: createdEvent }, err => {
             // Check for errors and log them if they exist.
             if (err) return console.error('Error Creating Calender Event:', err)
             // Else log that the event was created.
             addedEvent = true;
-            return console.log('Calendar event successfully created.')
+            return null//console.log('Calendar event successfully created.');
           }
         );
       } else {
         // If event array is not empty log that we are busy.
-        return console.log(`Sorry I'm busy...`);
+        return null //console.log(`Sorry I'm busy...`);
       }
     }
   );
 }
-//*/
-
-app.get(/[\s\S]*/, function(req, res) {
-  let router = req.url;
-  if(router == "/favicon.ico") router = "/";
-  if (router.startsWith("/")) {
-    fs.readFile("index.html", "utf-8",(err, data)=>{
-      addEventToCalendar(data);
+let output = [];
+function getCalendarInfo(res, data) {
+  
+  let pageInput = [];
+    let rowTemplete = `<tr>
+    <th>Event Name</th>
+    <th>Description</th>
+    <th>Event Start Date</th>
+    <th>Event End Date</th>
+    <th>Event Location</th>
+    <th>Status</th>
+    <th>Creator</th>
+</tr>`;
+  calendar.events.list({
+    calendarId: 'primary',
+    timeMin: (new Date()).toISOString(),
+    maxResults: 10,
+    singleEvents: true,
+    orderBy: 'startTime',
+  }, (err, sult) => {
+    if (err) throw console.log('The API returned an error: ' + err);
+    const events = sult.data.items;
+    if (events.length) {
+      events.map((event, i) => {
+        output.push(event);
+      });
+      //console.log(output);
+      output.forEach(selectedEvent => {
+        let temp = rowTemplete;
+        temp = temp.replace("Event Name", selectedEvent.summary);
+        temp = temp.replace("Description", selectedEvent.description);
+        temp = temp.replace("Event Start Date", selectedEvent.start.dateTime);
+        temp = temp.replace("Event End Date", selectedEvent.end.dateTime);
+        temp = temp.replace("Event Location", selectedEvent.location);
+        temp = temp.replace("Status", selectedEvent.status);
+        temp = temp.replace("Creator", selectedEvent.creator.email);
+        pageInput.push(temp);
+      });
+      console.log(output);
+      data = data.replace(`^/^input^/^`, pageInput);
       res.send(data);
-    });
-    return;
-  }
+    }
+  });
+  
+}
+
+app.post("/addEvent", function(req, res) {
+  fs.readFile("index.html", "utf-8",(err, data)=>{
+    addEventToCalendar(data);
+    res.send(data);
+  });
 });
+
+app.get("/", function(req, res) {
+  fs.readFile("index.html", "utf-8",(err, data)=> {
+    getCalendarInfo(res, data);
+  });
+});
+
+
 app.listen(port, hostname, () => {
   console.log(`Server running at http://${hostname}:${port}/`);
 });
