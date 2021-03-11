@@ -91,8 +91,8 @@ function eventEndTimeEval(day, hour) {
 }
 
 // Check if we are busy and add an event on our calendar at the same time.
-function addEventToCalendar(fileData){
-  let createdEvent = new NewCalendarEvent("testing", "This is date testing", "this is a location", 4, {day:2, hour:0},{day:3, hour:24});
+function addEventToCalendar(req, res, fileData){
+  let createdEvent = new NewCalendarEvent(req.Name, req.Location, req.Description, Number(req.colorId), {day:Number(req.startd), hour:Number(req.starth) },{day:Number(req.endd), hour:Number(req.endh)});
   calendar.freebusy.query(
     {
       resource: {
@@ -102,12 +102,12 @@ function addEventToCalendar(fileData){
         items: [{ id: 'primary' }],
       },
     },
-    (err, res) => {
+    (err, sult) => {
       // Check for errors in our query and log them if they exist.
       if (err) return console.error('Free Busy Query Error: ', err)
 
       // Create an array of all events on our calendar during that time.
-      const eventArr = res.data.calendars.primary.busy
+      const eventArr = sult.data.calendars.primary.busy
 
       // Check if event array is empty which means we are not busy
       if (eventArr.length === 0){
@@ -117,32 +117,33 @@ function addEventToCalendar(fileData){
             if (err) return console.error('Error Creating Calender Event:', err)
             // Else log that the event was created.
             addedEvent = true;
-            return null//console.log('Calendar event successfully created.');
+            return res.send(fileData);//console.log('Calendar event successfully created.');
           }
         );
       } else {
         // If event array is not empty log that we are busy.
-        return null //console.log(`Sorry I'm busy...`);
+        return res.status(400).send("you suck, and did not put the right data in."); //console.log(`Sorry I'm busy...`);
       }
     }
   );
 }
-let output = [];
+
 function getCalendarInfo(res, data) {
-  
+  let output = [];
   let pageInput = [];
     let rowTemplete = `<tr>
-    <th>Event Name</th>
-    <th>Description</th>
-    <th>Event Start Date</th>
-    <th>Event End Date</th>
-    <th>Event Location</th>
-    <th>Status</th>
-    <th>Creator</th>
+    <td>Event Name</td>
+    <td>Description</td>
+    <td>Event Start Date</td>
+    <td>Event End Date</td>
+    <td>Event Location</td>
+    <td>Status</td>
+    <td>Creator</td>
 </tr>`;
   calendar.events.list({
     calendarId: 'primary',
-    timeMin: (new Date()).toISOString(),
+    timeMin: (new Date(new Date().setHours(0,0,0))).toISOString(),
+    timeMax:(new Date(new Date().setHours(13,59,59,0))).toISOString(),
     maxResults: 10,
     singleEvents: true,
     orderBy: 'startTime',
@@ -165,18 +166,29 @@ function getCalendarInfo(res, data) {
         temp = temp.replace("Creator", selectedEvent.creator.email);
         pageInput.push(temp);
       });
-      console.log(output);
       data = data.replace(`^/^input^/^`, pageInput);
+      res.send(data);
+      return
+    } else {
+      data = data.replace(`^/^input^/^`, `<tr>
+      <td>no</td>
+      <td>events</td>
+      <td>for</td>
+      <td>a</td>
+      <td>while,</td>
+      <td>good</td>
+      <td>job</td>
+  </tr>`);
       res.send(data);
     }
   });
   
 }
 
-app.post("/addEvent", function(req, res) {
-  fs.readFile("index.html", "utf-8",(err, data)=>{
-    addEventToCalendar(data);
-    res.send(data);
+app.get("/addEvent", function(req, res) {
+  fs.readFile("redirect.html", "utf-8",(err, data)=>{
+    //console.log(req.query);  //debug input
+    addEventToCalendar(req.query, res, data);
   });
 });
 

@@ -4,9 +4,44 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Calendar</title>
+    <style>
+        form
+        {
+            border-color: black;
+            border-width: 2px;
+            border-style: solid;
+            width: max-content;
+            float: right;
+            margin-right: 50px;
+            position: sticky;
+        }
+        table
+        {
+            border-color: black;
+            border-width: 4px;
+            border-style: groove;
+            border-collapse: separate;
+        }
+        th
+        {
+            width: 150px;
+        }
+    </style>
 </head>
     <body>
         <H1>This is my calendar</H1>
+        <form action="/addEvent" method="GET">
+            <legend>New Event</legend>
+            <label for="Name">Name of event</label><input name="Name" type="text"><br>
+            <label for="Description">Description of event</label><input name="Description" type="text"><br>
+            <label for="Location">Location of event</label><input name="Location" type="text"><br>
+            <label for="colorId">Id of event</label><input type="range" name="colorId" id="colorId" min="1" max="11"><br>
+            <label for="startd">How many days from today is the event</label><input name="startd" type="number"><br>
+            <label for="starth">at what hour does the event start</label><input name="starth" type="range" min="0" max="24"><br>
+            <label for="endd">How many days from today is the event</label><input name="endd" type="number"><br>
+            <label for="endh">at what hour does the event start</label><input name="endh" type="range" min="0" max="24"><br>
+            <button type="submit">Create</button>
+        </form>
         <table>
             <tr>
                 <th>Event Name</th>
