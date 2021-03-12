@@ -4,7 +4,12 @@ const express = require('express');
 const app = express();
 const {google} = require('googleapis');
 const keys = require('./keys');
-const hostname = '127.0.0.1';
+var bodyParser = require('body-parser');
+app.use(bodyParser.urlencoded({
+  extended: false
+}));
+app.use(bodyParser.json());
+const hostname = '127.0.0.2';
 const port = 8000;
 
 //define client information from google developer console
@@ -122,7 +127,7 @@ function addEventToCalendar(req, res, fileData){
         );
       } else {
         // If event array is not empty log that we are busy.
-        return res.status(400).send("you suck, and did not put the right data in."); //console.log(`Sorry I'm busy...`);
+        return res.send("You have an event there already."); //console.log(`Sorry I'm busy...`);
       }
     }
   );
@@ -143,7 +148,7 @@ function getCalendarInfo(res, data) {
   calendar.events.list({
     calendarId: 'primary',
     timeMin: (new Date(new Date().setHours(0,0,0))).toISOString(),
-    timeMax:(new Date(new Date().setHours(13,59,59,0))).toISOString(),
+    timeMax:(new Date(new Date().setHours(23,59,59,0))).toISOString(),
     maxResults: 10,
     singleEvents: true,
     orderBy: 'startTime',
@@ -159,8 +164,8 @@ function getCalendarInfo(res, data) {
         let temp = rowTemplete;
         temp = temp.replace("Event Name", selectedEvent.summary);
         temp = temp.replace("Description", selectedEvent.description);
-        temp = temp.replace("Event Start Date", selectedEvent.start.dateTime);
-        temp = temp.replace("Event End Date", selectedEvent.end.dateTime);
+        temp = temp.replace("Event Start Date", new Date(selectedEvent.start.dateTime).toLocaleTimeString());
+        temp = temp.replace("Event End Date", new Date(selectedEvent.end.dateTime).toLocaleTimeString());
         temp = temp.replace("Event Location", selectedEvent.location);
         temp = temp.replace("Status", selectedEvent.status);
         temp = temp.replace("Creator", selectedEvent.creator.email);
@@ -185,10 +190,16 @@ function getCalendarInfo(res, data) {
   
 }
 
-app.get("/addEvent", function(req, res) {
+
+app.post('/addEvent',function(req,res) {
+  // console.log(req.body);
+  // var username = req.body.Name;
+  // var htmlData = 'Hello:' + username;
+  // res.send(htmlData);
+  // console.log(htmlData);
   fs.readFile("redirect.html", "utf-8",(err, data)=>{
     //console.log(req.query);  //debug input
-    addEventToCalendar(req.query, res, data);
+    addEventToCalendar(req.body, res, data);
   });
 });
 

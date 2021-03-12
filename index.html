@@ -26,33 +26,104 @@
         {
             width: 150px;
         }
+        p
+        {
+            margin: 0px;
+            padding: 0px;
+            margin-right: 50px;
+            display: inline;
+        }
     </style>
 </head>
     <body>
         <H1>This is my calendar</H1>
-        <form action="/addEvent" method="GET">
+        <form action="/addEvent" method="POST">
             <legend>New Event</legend>
-            <label for="Name">Name of event</label><input name="Name" type="text"><br>
-            <label for="Description">Description of event</label><input name="Description" type="text"><br>
-            <label for="Location">Location of event</label><input name="Location" type="text"><br>
-            <label for="colorId">Id of event</label><input type="range" name="colorId" id="colorId" min="1" max="11"><br>
-            <label for="startd">How many days from today is the event</label><input name="startd" type="number"><br>
-            <label for="starth">at what hour does the event start</label><input name="starth" type="range" min="0" max="24"><br>
-            <label for="endd">How many days from today is the event</label><input name="endd" type="number"><br>
-            <label for="endh">at what hour does the event start</label><input name="endh" type="range" min="0" max="24"><br>
+            <label for="Name">Name of event</label>
+                <input name="Name" type="text" id="Name" value="title"><br>
+            <label for="Description">Description of event</label>
+                <input name="Description" type="text" value="description"><br>
+            <label for="Location">Location of event</label>
+                <input name="Location" type="text" value="location"><br>
+            <label for="colorId">Id of event</label>
+                <input type="number" name="colorId" id="colorId" min="1" max="11" value="1"><br>
+            <label for="startd">How many days from today does the event start</label>
+                <input name="startd" type="number" value="1"><br>
+            <label for="starth">at what hour does the event start</label>
+                <input name="starth" type="range" min="0" max="24" value="10"><p id="startHour">12</p><br>
+            <label for="endd">How many days from today does the event end</label>
+                <input name="endd" type="number" value="2"><br>
+            <label for="endh">at what hour does the event end</label>
+                <input name="endh" type="range" min="0" max="24" value="14"><p id="endHour">12</p><br>
             <button type="submit">Create</button>
         </form>
         <table>
-            <tr>
-                <th>Event Name</th>
-                <th>Description</th>
-                <th>Event Start Date</th>
-                <th>Event End Date</th>
-                <th>Event Location</th>
-                <th>Status</th>
-                <th>Creator</th>
-            </tr>
-            ^/^input^/^
+            <tbody>
+                <tr>
+                    <th>Event Name</th>
+                    <th>Description</th>
+                    <th>Event Start Date</th>
+                    <th>Event End Date</th>
+                    <th>Event Location</th>
+                    <th>Status</th>
+                    <th>Creator</th>
+                </tr>
+                ^/^input^/^
+            </tbody>
         </table>
     </body>
+    <script defer>
+        document.getElementsByName("colorId")[0].addEventListener("change", ()=> {
+            if(document.getElementsByName("colorId")[0].value < 1) {
+                document.getElementsByName("colorId")[0].value = 1;
+            }
+            if (document.getElementsByName("colorId")[0].value == 1) {
+                document.getElementsByName("colorId")[0].style.color = "blue";
+                document.getElementsByName("colorId")[0].style.background = "blue";
+            } else if (document.getElementsByName("colorId")[0].value == 2) {
+                document.getElementsByName("colorId")[0].style.color = "green";
+                document.getElementsByName("colorId")[0].style.background = "green";
+            } else if (document.getElementsByName("colorId")[0].value == 3) {
+                document.getElementsByName("colorId")[0].style.color = "purple";
+                document.getElementsByName("colorId")[0].style.background = "purple";
+            } else if (document.getElementsByName("colorId")[0].value == 4) {
+                document.getElementsByName("colorId")[0].style.color = "red";
+                document.getElementsByName("colorId")[0].style.background = "red";
+            } else if (document.getElementsByName("colorId")[0].value == 5) {
+                document.getElementsByName("colorId")[0].style.color = "yellow";
+                document.getElementsByName("colorId")[0].style.background = "yellow";
+            } else if (document.getElementsByName("colorId")[0].value == 6) {
+                document.getElementsByName("colorId")[0].style.color = "orange";
+                document.getElementsByName("colorId")[0].style.background = "orange";
+            } else if (document.getElementsByName("colorId")[0].value == 7) {
+                document.getElementsByName("colorId")[0].style.color = "Turquoise";
+                document.getElementsByName("colorId")[0].style.background = "Turquoise";
+            } else if (document.getElementsByName("colorId")[0].value == 8) {
+                document.getElementsByName("colorId")[0].style.color = "gray";
+                document.getElementsByName("colorId")[0].style.background = "gray";
+            } else if (document.getElementsByName("colorId")[0].value == 9) {
+                document.getElementsByName("colorId")[0].style.color = "darkblue";
+                document.getElementsByName("colorId")[0].style.background = "darkblue";
+            } else if (document.getElementsByName("colorId")[0].value == 10) {
+                document.getElementsByName("colorId")[0].style.color = "darkgreen";
+                document.getElementsByName("colorId")[0].style.background = "darkgreen";
+            } else if (document.getElementsByName("colorId")[0].value == 11) {
+                document.getElementsByName("colorId")[0].style.color = "darkred";
+                document.getElementsByName("colorId")[0].style.background = "darkred";
+            }
+
+        });
+
+        document.getElementsByName("starth")[0].addEventListener("mousemove", ()=> {
+            document.getElementById("startHour").innerHTML = document.getElementsByName("starth")[0].value;
+        });
+
+        document.getElementsByName("endh")[0].addEventListener("mousemove", ()=> {
+            document.getElementById("endHour").innerHTML = document.getElementsByName("endh")[0].value;
+        });
+
+        document.getElementsByName("colorId")[0].style.color = "blue";
+        document.getElementById("startHour").innerHTML = document.getElementsByName("starth")[0].value;
+        document.getElementById("endHour").innerHTML = document.getElementsByName("endh")[0].value;
+    </script>
 </html>
